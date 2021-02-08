@@ -1,0 +1,13 @@
+vaatii:
+- tensorflow
+- PIL
+- numpy
+- matplotlib
+
+asennus:
+pip3 install tensorflow
+pip3 install matplotlib
+pip3 install urllib
+pip3 install PIL
+pip3 install numpy
+
