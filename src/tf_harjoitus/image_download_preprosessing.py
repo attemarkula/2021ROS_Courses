@@ -1,19 +1,23 @@
 #!/usr/bin/python3
 import urllib.request
+
 from PIL import Image
+
 import numpy as np
 
-#urllib.request.urlretrieve('https://pixy.org/src/154/thumbs350/1547777.jpg', "jeans.jpg")
-
-
-img = Image.open("jeans.jpg")
+try:
+	img = Image.open("jeans.jpg")
+except Exception as e:
+	print("fetching file from internet")
+	urllib.request.urlretrieve('https://pixy.org/src/154/thumbs350/1547777.jpg', "jeans.jpg")
+	img = Image.open("jeans.jpg")
 
 def grayscale(colors):
     red,green,blue=colors
     return (0.07*red+0.072*green+0.021*blue)
 
-print("from: "+str(img.size),end="")
-#nopeutetaan hieman
+print("resize: "+str(img.size),end="")
+#nopeutetaan hieman ja esi-pienennetään iso
 img=img.resize((150,150))
 print(" -> "+str(img.size))
 
@@ -44,3 +48,4 @@ print(img_gray_small) #28x28 -> 8bit
 img_gray_small.save('jeans_small_gray2.jpg')
 
 print("\nprogram ends.")
+
