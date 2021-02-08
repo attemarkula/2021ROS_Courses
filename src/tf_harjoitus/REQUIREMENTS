@@ -7,7 +7,7 @@ vaatii:
 asennus:
 pip3 install tensorflow
 pip3 install matplotlib
-pip3 install urllib
-pip3 install PIL
+pip3 install urllib3
+pip3 install pillow
 pip3 install numpy
 
