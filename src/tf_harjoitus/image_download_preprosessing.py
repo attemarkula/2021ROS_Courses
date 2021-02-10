@@ -11,15 +11,17 @@ except Exception as e:
 	print("fetching file from internet")
 	urllib.request.urlretrieve('https://pixy.org/src/154/thumbs350/1547777.jpg', "jeans.jpg")
 	img = Image.open("jeans.jpg")
+else:
+	print("found local file, using it")
 
 def grayscale(colors):
     red,green,blue=colors
     return (0.07*red+0.072*green+0.021*blue)
 
-print("resize: "+str(img.size),end="")
+#print("resize: "+str(img.size),end="")
 #nopeutetaan hieman ja esi-pienennetään iso
-img=img.resize((150,150))
-print(" -> "+str(img.size))
+#img=img.resize((150,150))
+#print(" -> "+str(img.size))
 
 #img=Image.open('jeans.jpg')
 np_image = np.array(img)
@@ -44,8 +46,8 @@ grey_image = Image.fromarray(np_gray_image_int)
 #print(grey_image) #150x150 L -> 8bit
 
 img_gray_small = grey_image.resize((28,28))
-print(img_gray_small) #28x28 -> 8bit
-img_gray_small.save('jeans_small_gray2.jpg')
+#print(img_gray_small) #28x28 -> 8bit
+img_gray_small.save('jeans_small_gray.jpg')
 
 print("\nprogram ends.")
 
