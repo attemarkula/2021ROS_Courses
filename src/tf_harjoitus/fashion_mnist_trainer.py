@@ -3,12 +3,14 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
+#Dataset https://github.com/zalandoresearch/fashion-mnist
 #haetaan dataset fashion_mnist avulla
 fashion_mnist = tf.keras.datasets.fashion_mnist
 (train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
-class_names = ['T-shirt/top', 'Trouser','Pullover', 'Dress', 'Coat', 'Sandals', 'Shirts', 'Sneaker', 'Bag', 'Angle boot']
-print(train_images.shape)
+class_names = ['T-shirt/top', 'Trouser','Pullover', 'Dress', 'Coat',
+			 'Sandals', 'Shirts', 'Sneaker', 'Bag', 'Angle boot']
 
+print(train_images.shape)
 #ensimmäinen osa
 """
 plt.figure()
@@ -49,7 +51,7 @@ model.compile(optimizer='adam',
 	metrics=['accuracy'])
 
 #neuroverkon treenaus train datalla
-model.fit(train_images, train_labels, epochs=100)
+model.fit(train_images, train_labels, epochs=10)
 
 #neuroverkon testaus testaus datalla
 test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
@@ -60,5 +62,5 @@ print("Test accuracy:", test_acc)
 #tallennetaan neuroverkko myöhempää käyttöä varten.
 model.save('saved_model')
 
-	
+
 
