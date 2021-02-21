@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import urllib.request
 
-from PIL import Image
+from PIL import Image, ImageOps
 
 import numpy as np
 
@@ -16,7 +16,7 @@ else:
 
 def grayscale(colors):
     red,green,blue=colors
-    return (0.07*red+0.072*green+0.021*blue)
+    return (0.07*red+0.72*green+0.21*blue)
 
 #print("resize: "+str(img.size),end="")
 #nopeutetaan hieman ja esi-pienennetään iso
@@ -29,9 +29,13 @@ np_image = np.array(img)
 
 #allaoleva lataa ja konvertor ja pienentää kuvan(pienennys alussa nopeuttaa).
 #np_image = np.array(Image.open('jeans.jpg').convert("L").resize((300,300)))
-#print(np_image)
+
 #img=Image.fromarray(np_image)
 #img.save("1.jpg")
+
+#toinen tapa PIL.ImageOps funktiolla
+#imgbw=ImageOps.grayscale(img)
+#img.resize((28,28)).save("1bw.jpg")
 
 np_image_grayscale = np.apply_along_axis(grayscale,2,np_image)
 #print(np_image_grayscale)
@@ -39,15 +43,12 @@ np_image_grayscale = np.apply_along_axis(grayscale,2,np_image)
 np_gray_image_int =  np_image_grayscale.astype(np.uint8)
 #print(np_gray_image_int)
 
-grey_image = Image.fromarray(np_image_grayscale)
-#print(grey_image) #150x150 F -> 32bit
+np_gray_image = Image.fromarray(np_gray_image_int)
+#print(np_gray_image) #150x150 L -> 8bit
 
-grey_image = Image.fromarray(np_gray_image_int)
-#print(grey_image) #150x150 L -> 8bit
-
-img_gray_small = grey_image.resize((28,28))
-#print(img_gray_small) #28x28 -> 8bit
-img_gray_small.save('jeans_small_gray.jpg')
+np_image_gray_small = np_gray_image.resize((28,28))
+#print(np_image_gray_small) #28x28 -> 8bit
+np_image_gray_small.save('jeans_small_gray.jpg')
 
 print("\nprogram ends.")
 
