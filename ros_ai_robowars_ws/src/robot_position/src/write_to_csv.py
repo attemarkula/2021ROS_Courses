@@ -7,6 +7,7 @@ from std_srvs.srv import Empty
 import angles
 import csv
 from tf.transformations import euler_from_quaternion
+import time
 
 class Robot_position:
     def __init__(self):
@@ -65,5 +66,9 @@ if __name__ == "__main__":
     print("start write_to_csv")
     rbot= Robot_position()
     print("Robot_position "+str(rbot))
-    rospy.spin()
+
+    time.sleep(20)
+    print("20seconds done, exiting.")
+
+    #rospy.spin()
                 
