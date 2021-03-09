@@ -28,10 +28,10 @@ class Robot_position:
         self.write_to_csv_counter +=1
 
         orientation_in_quaternions = (
-        odom_sub.pose.pose.orieentation.x,
-        odom_sub.pose.pose.orieentation.y,
-        odom_sub.pose.pose.orieentation.z,
-        odom_sub.pose.pose.orieentation.w)
+        odom_sub.pose.pose.orientation.x,
+        odom_sub.pose.pose.orientation.y,
+        odom_sub.pose.pose.orientation.z,
+        odom_sub.pose.pose.orientation.w)
         
         orientation_in_euler = euler_from_quaternion(orientation_in_quaternions)
         
