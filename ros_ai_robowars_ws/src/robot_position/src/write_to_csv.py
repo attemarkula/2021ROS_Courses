@@ -21,7 +21,16 @@ class Robot_position:
         self.us6_sub = message_filters.Subscriber('/ultrasonic6',Range)
         self.odom_sub = message_filters.Subscriber('/robot1/odom',Odometry)
 
-        self.subs = message_filters.ApproximateTimeSynchronizer([ self.us1_sub, self.us2_sub, self.us3_sub, self.us4_sub, self.us5_sub, self.us6_sub ],queue_size=1,slop=1, allow_headerless=True)
+        self.subs = message_filters.ApproximateTimeSynchronizer([ self.us1_sub, self.us2_sub, self.us3_sub, self.us4_sub, self.us5_sub, self.us6_sub, self.odom_sub ],queue_size=1,slop=0.6, allow_headerless=True)
+        self.subs.registerCallback(self.sensor_callback)
+        
+        self.positions_file = open('robots_positions.csv',mode='w')
+        self.positions_writer = csv.writer(self.positions_file, delimiter=',')
+        
+        self.reset_counter = 0
+        self.write_to_csv_counter = 0
+
+
 
     def sensor_callback(self, us1_sub, us2_sub, us3_sub, us4_sub, us5_sub, us6_sub, odom_sub):
         self.reset_counter+=1
@@ -45,7 +54,7 @@ class Robot_position:
         ground_truth_y = odom_sub.pose.pose.position.y
 
         if self.write_to_csv_counter > 19:
-            self.position_writer.writerow(yaw,us1_sub.range,us2_sub.range,us3_sub.range,us4_sub.range,us5_sub.range,us6_sub.range,ground_truth_x,ground_truth_y)
+            self.positions_writer.writerow([yaw,us1_sub.range,us2_sub.range,us3_sub.range,us4_sub.range,us5_sub.range,us6_sub.range,ground_truth_x,ground_truth_y])
             self.write_to_csv_counter = 0
 
         if self.reset_counter > 10000:
