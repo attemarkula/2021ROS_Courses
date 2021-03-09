@@ -46,10 +46,13 @@ class Robot_position:
         odom_sub.pose.pose.orientation.w)
         
         orientation_in_euler = euler_from_quaternion(orientation_in_quaternions)
-        
-        roll = orientation_in_euler[0]
-        pitch = orientation_in_euler[1]
-        yaw = orientation_in_euler[2]
+        odom_roll = orientation_in_euler[0]
+        odom_pitch = orientation_in_euler[1]
+        odom_yaw = orientation_in_euler[2]
+        odom_yaw_in_radians=angles.normalize_angle_positive(odom_yaw)
+
+        odom_truth_x = odom_sub.pose.pose.position.x
+        odom_truth_y = odom_sub.pose.pose.position.y
 
         #Helppo. Tunnilla tehdyssä esimerkissä käytimme odmometria topicin asentotietoa, 
         # parempi kuitenkin olisi käyttää /robot1/imu tietoa. 
