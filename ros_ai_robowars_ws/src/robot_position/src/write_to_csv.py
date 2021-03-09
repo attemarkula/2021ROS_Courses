@@ -3,6 +3,7 @@
 import rospy, random, math, message_filters
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Range
+from sensor_msgs.msg import Imu
 from std_srvs.srv import Empty
 import angles
 import csv
@@ -21,19 +22,20 @@ class Robot_position:
         self.us5_sub = message_filters.Subscriber('/ultrasonic5',Range)
         self.us6_sub = message_filters.Subscriber('/ultrasonic6',Range)
         self.odom_sub = message_filters.Subscriber('/robot1/odom',Odometry)
+        self.imu_sub = message_filters.Subscriber('/robot1/imu',Imu)
 
-        self.subs = message_filters.ApproximateTimeSynchronizer([ self.us1_sub, self.us2_sub, self.us3_sub, self.us4_sub, self.us5_sub, self.us6_sub, self.odom_sub ],queue_size=1,slop=0.6, allow_headerless=True)
+        self.subs = message_filters.ApproximateTimeSynchronizer([ self.us1_sub, self.us2_sub, self.us3_sub, self.us4_sub, self.us5_sub, self.us6_sub, self.odom_sub, self.imu_sub ],queue_size=1,slop=0.6, allow_headerless=True)
         self.subs.registerCallback(self.sensor_callback)
         
         self.positions_file = open('robots_positions.csv',mode='w')
         self.positions_writer = csv.writer(self.positions_file, delimiter=',')
         
+        self.csv_fieldnames=['us1_sub.range','us2_sub.range','us3_sub.range','us4_sub.range','us5_sub.range','us6_sub.range','odom_yaw','imu_yaw','odom_pitch','imu_pitch','odom_roll','imu_roll','odom_truth_x','odom_truth_y']
+        csv.DictWriter(self.positions_file,self.csv_fieldnames)
         self.reset_counter = 0
         self.write_to_csv_counter = 0
 
-
-
-    def sensor_callback(self, us1_sub, us2_sub, us3_sub, us4_sub, us5_sub, us6_sub, odom_sub):
+    def sensor_callback(self, us1_sub, us2_sub, us3_sub, us4_sub, us5_sub, us6_sub, odom_sub, imu_sub):
         self.reset_counter+=1
         self.write_to_csv_counter +=1
 
@@ -49,13 +51,22 @@ class Robot_position:
         pitch = orientation_in_euler[1]
         yaw = orientation_in_euler[2]
 
-        yaw_in_radians=angles.normalize_angle_positive(yaw)
-        
-        ground_truth_x = odom_sub.pose.pose.position.x
-        ground_truth_y = odom_sub.pose.pose.position.y
+        #Helppo. Tunnilla tehdyssä esimerkissä käytimme odmometria topicin asentotietoa, 
+        # parempi kuitenkin olisi käyttää /robot1/imu tietoa. 
+        # Muuta datan tallennus nodea, niin että se käyttää orientaatio datana imu tietoa.
+        orientation_in_quaternions = (
+        imu_sub.orientation.x,
+        imu_sub.orientation.y,
+        imu_sub.orientation.z,
+        imu_sub.orientation.w)
+        orientation_in_euler = euler_from_quaternion(orientation_in_quaternions)
+        imu_roll = orientation_in_euler[0]
+        imu_pitch = orientation_in_euler[1]
+        imu_yaw = orientation_in_euler[2]
+        imu_yaw_in_radians=angles.normalize_angle_positive(imu_yaw)
 
         if self.write_to_csv_counter > 19:
-            self.positions_writer.writerow([yaw,us1_sub.range,us2_sub.range,us3_sub.range,us4_sub.range,us5_sub.range,us6_sub.range,ground_truth_x,ground_truth_y])
+            self.positions_writer.writerow([us1_sub.range,us2_sub.range,us3_sub.range,us4_sub.range,us5_sub.range,us6_sub.range,odom_yaw,imu_yaw,odom_pitch,imu_pitch,odom_roll,imu_roll,odom_truth_x,odom_truth_y])
             self.write_to_csv_counter = 0
 
         if self.reset_counter > 10000:
