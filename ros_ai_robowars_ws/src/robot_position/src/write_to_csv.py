@@ -68,6 +68,8 @@ class Robot_position:
         if self.write_to_csv_counter > 19:
             self.positions_writer.writerow([us1_sub.range,us2_sub.range,us3_sub.range,us4_sub.range,us5_sub.range,us6_sub.range,odom_yaw,imu_yaw,odom_pitch,imu_pitch,odom_roll,imu_roll,odom_truth_x,odom_truth_y])
             self.write_to_csv_counter = 0
+            print("flush") 
+            self.positions_file.flush()
 
         if self.reset_counter > 10000:
                 self.reset_simulation_call()
