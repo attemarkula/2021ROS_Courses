@@ -1,0 +1,16 @@
+<launch>
+	<arg name="image_topic" default="/" />
+	<arg name="storage_folder" default="$(find image_saver)/pictures" />
+
+<node 
+	name="camera_controller"
+	pkg="image_view"
+	type="image_saver"
+	output="screen">
+	<remap from="image" to="$(arg image_topic)"/>
+	<param name="save_all_image" value="False"/>
+	<param name="filename" value="$(arg storage_folder/image_%04d.png"/>
+</node>
+<node name="image_saver_caller" pkg="image_saver" type="image_saver_caller.py" />
+
+</launch>
