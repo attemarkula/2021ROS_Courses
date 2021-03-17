@@ -1,4 +1,4 @@
-#Kolmannen luennon palautettava tehtävä#
+#Kolmannen luennon tehtävä#
 
 
 ##Helppo##
@@ -12,3 +12,4 @@ ultraääni sensoreita, on robotti5 varustettu lidarilla, Tee vastaava datan ker
 ##Vaikea##
 Sama kuin normaalissa, mutta tallenna orientaatio tieto imu:sta. Liäsksi lidaria käyttämällä voidaan koittaa havainnoida myös vastustajan paikka tieto,
 Lisää myös vastustajan(robotti1) paikkatiedon ground truth tieto csv tiedostoon.
+
