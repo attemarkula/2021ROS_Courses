@@ -1,0 +1,1 @@
+imu_yaw,imu_pitch,imu_roll,odom_truth_x,odom_truth_y,odom_yaw,odom_pitch,odom_roll
