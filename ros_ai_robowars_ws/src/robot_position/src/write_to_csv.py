@@ -10,8 +10,6 @@ import csv
 from tf.transformations import euler_from_quaternion
 import time
 
-reset_counter = 0
-
 class Robot_position:
     def __init__(self):
         self.node = rospy.init_node("position_from_ultrasonic")
@@ -31,18 +29,25 @@ class Robot_position:
         
         self.positions_file = open('robots_positions.csv',mode='w')
         self.positions_writer = csv.writer(self.positions_file, delimiter=',')
-        
-        self.csv_fieldnames=['us1_sub.range','us2_sub.range','us3_sub.range','us4_sub.range','us5_sub.range','us6_sub.range','odom_yaw','imu_yaw','odom_pitch','imu_pitch','odom_roll','imu_roll','odom_truth_x','odom_truth_y']
-        #csv.DictWriter(self.positions_file,self.csv_fieldnames)
-        self.positions_writer.DictWriter=csv.DictWriter(self.positions_file,self.csv_fieldnames)
-        #self.positions_writer.DictWriter(self.positions_file,fieldnames=self.csv_fieldnames)
         self.positions_file.flush()
+        
+        self.orientations_file = open('robots_orientation.csv',mode='w')
+        self.orientations_writer = csv.writer(self.orientations_file, delimiter=',')
+        self.orientations_file.flush()
+        
+        #myöhempi versio missä järkevämpi tapa lähettää kentät.
+        #self.csv_fieldnames=['us1_sub.range','us2_sub.range','us3_sub.range','us4_sub.range','us5_sub.range','us6_sub.range','odom_yaw','imu_yaw','odom_pitch','imu_pitch','odom_roll','imu_roll','odom_truth_x','odom_truth_y']
+        #csv.DictWriter(self.positions_file,self.csv_fieldnames)
+        #self.positions_writer.DictWriter=csv.DictWriter(self.positions_file,self.csv_fieldnames)
+        #self.positions_writer.DictWriter(self.positions_file,fieldnames=self.csv_fieldnames)
+        #self.positions_file.flush()
 
-        reset_counter = 0
+        self.reset_counter = 0
         self.write_to_csv_counter = 0
 
     def sensor_callback(self, us1_sub, us2_sub, us3_sub, us4_sub, us5_sub, us6_sub, odom_sub, imu_sub):
-        reset_counter = reset_counter+1
+        #print("debug:sensor_callback()")
+        self.reset_counter = self.reset_counter+1
         self.write_to_csv_counter +=1
 
         orientation_in_quaternions = (
@@ -74,24 +79,29 @@ class Robot_position:
         imu_yaw = orientation_in_euler[2]
         imu_yaw_in_radians=angles.normalize_angle_positive(imu_yaw)
 
-        if self.write_to_csv_counter > 19:
-            self.positions_writer.writerow([us1_sub.range,us2_sub.range,us3_sub.range,us4_sub.range,us5_sub.range,us6_sub.range,odom_yaw,imu_yaw,odom_pitch,imu_pitch,odom_roll,imu_roll,odom_truth_x,odom_truth_y])
-            self.write_to_csv_counter = 0
-            print("flush") 
-            self.positions_file.flush()
+        #print("debug:",str(self.reset_counter))
+        #print(odom_truth_x, odom_truth_y)
+        #print(imu_sub.orientation.x, imu_sub.orientation.y)
 
-        if reset_counter > 10000:
+        if self.write_to_csv_counter > 19:
+            print("write line and flush") 
+            self.write_to_csv_counter = 0
+            self.positions_writer.writerow([us1_sub.range,us2_sub.range,us3_sub.range,us4_sub.range,us5_sub.range,us6_sub.range,odom_truth_x,odom_truth_y])
+            self.positions_file.flush()
+            
+            self.orientations_writer.writerow([imu_yaw,imu_pitch,imu_roll,odom_truth_x,odom_truth_y,odom_yaw,odom_pitch,odom_roll])
+            self.orientations_file.flush()
+
+        if self.reset_counter > 10000:
                 self.reset_simulation_call()
-                reset_counter = 0
+                self.reset_counter = 0
 
 if __name__ == "__main__":
     print("start write_to_csv")
-    reset_counter = 0
     rbot= Robot_position()
     print("Robot_position "+str(rbot))
 
-    time.sleep(20)
-    print("20seconds done, exiting.")
+    #time.sleep(20)
+    #print("20seconds done, exiting.")
 
-    #rospy.spin()
-                
+    rospy.spin()
