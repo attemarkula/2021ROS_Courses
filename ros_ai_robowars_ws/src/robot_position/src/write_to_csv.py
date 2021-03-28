@@ -10,6 +10,9 @@ import csv
 from tf.transformations import euler_from_quaternion
 import time
 
+# tiedoston nimi : "päiväys-odometry/imu/"
+filename_prefix = "db_" +str(time.strftime("%Y%M%d%H%M%S", time.localtime())) + "_"
+
 class Robot_position:
     def __init__(self):
         self.node = rospy.init_node("position_from_ultrasonic")
@@ -27,20 +30,14 @@ class Robot_position:
         self.subs = message_filters.ApproximateTimeSynchronizer([ self.us1_sub, self.us2_sub, self.us3_sub, self.us4_sub, self.us5_sub, self.us6_sub, self.odom_sub, self.imu_sub ],queue_size=1,slop=0.6, allow_headerless=True)
         self.subs.registerCallback(self.sensor_callback)
         
-        self.positions_file = open('robots_positions.csv',mode='w')
-        self.positions_writer = csv.writer(self.positions_file, delimiter=',')
-        self.positions_file.flush()
-        
-        self.orientations_file = open('robots_orientation.csv',mode='w')
-        self.orientations_writer = csv.writer(self.orientations_file, delimiter=',')
-        self.orientations_file.flush()
-        
         #myöhempi versio missä järkevämpi tapa lähettää kentät.
-        #self.csv_fieldnames=['us1_sub.range','us2_sub.range','us3_sub.range','us4_sub.range','us5_sub.range','us6_sub.range','odom_yaw','imu_yaw','odom_pitch','imu_pitch','odom_roll','imu_roll','odom_truth_x','odom_truth_y']
-        #csv.DictWriter(self.positions_file,self.csv_fieldnames)
-        #self.positions_writer.DictWriter=csv.DictWriter(self.positions_file,self.csv_fieldnames)
-        #self.positions_writer.DictWriter(self.positions_file,fieldnames=self.csv_fieldnames)
-        #self.positions_file.flush()
+        self.positions_file = open(filename_prefix+'robots_positions.csv',mode='w')
+        self.csv_fieldnames=['us1_sub.range','us2_sub.range','us3_sub.range','us4_sub.range','us5_sub.range','us6_sub.range','odom_yaw','imu_yaw','odom_pitch','imu_pitch','odom_roll','imu_roll','odom_truth_x','odom_truth_y']
+
+        self.positions_writer = csv.DictWriter(self.positions_file,fieldnames=self.csv_fieldnames)
+        self.positions_writer.writeheader()
+        self.positions_file.flush()
+        self.positions_file_writecounter = 0
 
         self.reset_counter = 0
         self.write_to_csv_counter = 0
@@ -55,7 +52,7 @@ class Robot_position:
         odom_sub.pose.pose.orientation.y,
         odom_sub.pose.pose.orientation.z,
         odom_sub.pose.pose.orientation.w)
-        
+
         orientation_in_euler = euler_from_quaternion(orientation_in_quaternions)
         odom_roll = orientation_in_euler[0]
         odom_pitch = orientation_in_euler[1]
@@ -85,16 +82,33 @@ class Robot_position:
 
         if self.write_to_csv_counter > 19:
             print("write line and flush") 
+            print("Writing line", self.positions_file_writecounter)
+            self.positions_file_writecounter += 1
             self.write_to_csv_counter = 0
-            self.positions_writer.writerow([us1_sub.range,us2_sub.range,us3_sub.range,us4_sub.range,us5_sub.range,us6_sub.range,odom_truth_x,odom_truth_y])
+            self.positions_writer.writerow({
+                'us1_sub.range': us1_sub.range,
+                'us2_sub.range': us2_sub.range,
+                'us3_sub.range': us3_sub.range,
+                'us4_sub.range': us4_sub.range,
+                'us5_sub.range': us5_sub.range,
+                'us6_sub.range': us6_sub.range,
+                'odom_yaw': odom_yaw,
+                'imu_yaw': imu_yaw,
+                'odom_pitch': odom_pitch,
+                'imu_pitch': imu_pitch,
+                'odom_roll': odom_roll,
+                'imu_roll': imu_roll,
+                'odom_truth_x': odom_truth_x,
+                'odom_truth_y': odom_truth_y
+            }) #Huom. tämä sisältää kaikki tiedot, mutta täytetään vain tehtävän kirjain, niin poistetaan odom sarakkeet tallennuksesta. 
+            # Kerätään tupla pitch, roll, yaw, jotta verrataan virheen määrää myöhemmin ohjelmalla, tai käsin.
             self.positions_file.flush()
-            
-            self.orientations_writer.writerow([imu_yaw,imu_pitch,imu_roll,odom_truth_x,odom_truth_y,odom_yaw,odom_pitch,odom_roll])
-            self.orientations_file.flush()
-
-        if self.reset_counter > 10000:
-                self.reset_simulation_call()
-                self.reset_counter = 0
+        # resetissä ratkaisematon ongelma
+        # katkaisee csv tulostuksen, koska kello nollaantuu resetissä.
+#        if self.reset_counter > 10000:
+#            # maybe this breaks ApproximateTimeSynchronizer
+#            self.reset_simulation_call()
+#            self.reset_counter = 0
 
 if __name__ == "__main__":
     print("start write_to_csv")
